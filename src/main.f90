@@ -1,4 +1,5 @@
 program main
   use bem
-  call dostuff(1.0)
+  call chap1ex1(20)
+  !call dostuff(1.0)
 end program
