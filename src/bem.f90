@@ -1,7 +1,6 @@
 module bem
   implicit none
   real, parameter:: pi = 4.0*atan(1.0)
-  integer, parameter:: max_size = 1000
   contains
     subroutine dostuff(x)
      real:: x
@@ -38,12 +37,12 @@ module bem
   !----------------------------------------------------------------------------
   !
   subroutine CELAP1(N, xm, ym, xb, yb, nx, ny, lg, BCT, BCV, phi, dphi)
-    integer:: m, k, N, BCT(max_size)
-    real:: xm(max_size), ym(max_size), xb(max_size), yb(max_size)
-    real:: nx(max_size), ny(max_size), lg(max_size), BCV(max_size), Z(max_size)
-    real:: A(max_size, max_size), B(max_size), phi(max_size), dphi(max_size)
+    integer:: m, k, N, BCT(N)
+    real:: xm(N), ym(N), xb(N+1), yb(N+1)
+    real:: nx(N), ny(N), lg(N), BCV(N), Z(N)
+    real:: A(N, N), B(N), phi(N), dphi(N)
     real:: PF1, PF2, del, F1, F2
-
+    
     do m = 1, N
       B(m) = 0.0
       do k = 1, N
@@ -83,16 +82,103 @@ module bem
   !
   subroutine CELAP2(N, xi, eta, xb, yb, nx, ny, lg, phi, dphi, pint)
     integer:: N, i
-    real, intent(in):: xi, eta, xb(max_size), yb(max_size), nx(max_size), ny(max_size)
-    real, intent(in):: lg(max_size), phi(max_size), dphi(max_size), pint
+    real, intent(in):: xi, eta, xb(N+1), yb(N+1), nx(N), ny(N)
+    real, intent(in):: lg( N), phi(N), dphi(N)
+    real:: sum, pint, PF1, PF2
+
+    sum = 0.0
+
+    do i = 1,N
+      call CPF(xi, eta, xb(i), yb(i), nx(i), ny(i), lg(i), PF1, PF2)
+      sum = sum + phi(i) * PF2 - dphi(i) * PF1
+    end do
+
+    pint = sum / pi
   end subroutine
   !
   !----------------------------------------------------------------------------
   !
   subroutine solver(A, B, N, lud, Z)
-    integer:: lda, N, info, lud, IDAMAX, j, k, kp1, l, nm1, kb
-    integer:: ipvt(max_size)
-    real:: A(max_size, max_size), B(max_size), Z(max_size)
+    integer, intent(in):: N
+    integer:: lda, info, lud, IDAMAX, i, j, k, kp1, l, nm1, kb
+    integer:: ipvt(N)
+    real:: A(N, N), AMD(N, N), B(N), Z(N), t
+
+!    common/ludcmp/ipvt, AMD
+    
+    nm1 = N - 1
+
+    do i = 1, N
+      Z(i) = B(i)
+    end do
+
+    if (lud == 0) goto 99
+
+    do i = 1, N
+      do j = 1, N
+        AMD(i, j) = A(i, j)
+      end do
+    end do
+
+    info = 0
+    
+    if (nm1 < 1) goto 70
+
+    do k = 1, nm1
+      kp1 = k + 1
+      l = IDAMAX(N - k + 1, AMD(k, k), 1) + k-1
+      ipvt(k) = l
+      if (AMD(l, k) == 0.0) goto 40
+      if (l == k) goto 10
+      t = AMD(l, k)
+      AMD(l,k) = AMD(k, k)
+      AMD(k,k) = t
+  10  continue
+      t = -1.0/AMD(k, k)
+      call DSCAL(N-k, t, AMD(k+1, k), 1)
+      do j = kp1, N
+        t = AMD(l, j)
+        if (l == k) goto 20
+        AMD(l, j) = AMD(k, j)
+        AMD(k, j) = t
+  20  continue
+        call DAXPY(N-k, t, AMD(k+1, k), 1, AMD(k+1, j), 1)
+    end do
+    goto 50
+  40 continue
+    info = k
+  50 continue
+    end do
+  70 continue
+    ipvt(N) = N
+
+    if (AMD(N, N) == 0.0) info = N
+    if (info /= 0) write(*,*) "Division by zero in SOLVER"
+  99 continue
+
+    if (nm1 < 1) goto 130
+
+    do k = 1, nm1
+      l = ipvt(k)
+      t = Z(l)
+      if (l /= k) then
+        Z(l) = Z(k)
+        Z(k) = t
+      end if
+
+      call DAXPY(N-k, t, AMD(k+1, k), 1, Z(k+1), 1)
+  
+    end do
+
+  130 continue
+
+    do kb = 1, N
+      k = N+1 - kb
+      Z(k) = Z(k) / AMD(k, k)
+      t = -Z(k)
+      call DAXPY(k-1, t, AMD(1, k), 1, Z(1), 1)
+    end do
+
   end subroutine
   !
   !----------------------------------------------------------------------------
@@ -103,7 +189,7 @@ module bem
     real:: xb(4*NO+1), yb(4*NO+1), xm(4*NO), ym(4*NO), nx(4*NO), ny(4*NO), lg(4*NO), BCV(4*NO)
     real:: phi(4*NO), dphi(4*NO), pint, dl, xi, eta
 
-    N = 4.0*NO
+    N = 4 * NO
     dl = 1.0/real(NO)
 
     do i = 1, NO
@@ -145,6 +231,13 @@ module bem
     end do
 
     call CELAP1(N, xm, ym, xb, yb, nx, ny, lg, BCT, BCV, phi, dphi)
+
+    xi = 0.1
+    eta = 0.2
+
+    call CELAP2(N, xi, eta, xb, yb, nx, ny, lg, phi, dphi, pint)
+
+    write(*,*) pint
 
   end subroutine
 
