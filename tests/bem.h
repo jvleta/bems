@@ -1,5 +1,5 @@
 #pragma once
 
 extern "C" {
-void dostuff();
+void run_celap_ex1();
 }

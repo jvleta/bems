@@ -6,7 +6,7 @@
 #include "bem.h"
 
 TEST(CELAP, Example1) {
-  dostuff();
+  run_celap_ex1();
   std::ifstream current_output("../tests/celap/celap_example1.out");
   std::ifstream expected_output("../tests/celap/celap_example1.out_std");
   bool found_difference = false;

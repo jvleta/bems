@@ -1,10 +1,11 @@
 module celap
+  use iso_c_binding
   use scifor
   implicit none
   contains
-  subroutine dostuff() bind(c, name='dostuff')
+  subroutine run_celap_ex1() bind(c, name='run_celap_ex1')
     use iso_c_binding
-    call chap1ex1(20)
+    call celap_ex1(20)
   end subroutine
   !
   !----------------------------------------------------------------------------
@@ -100,7 +101,7 @@ module celap
   !
   !----------------------------------------------------------------------------
   !
-  subroutine chap1ex1(NO)
+  subroutine celap_ex1(NO)
     integer:: NO, N, i, ians
     integer:: BCT(4*NO)
     real(8):: xb(4*NO+1), yb(4*NO+1), xm(4*NO), ym(4*NO), nx(4*NO), ny(4*NO), lg(4*NO), BCV(4*NO)
