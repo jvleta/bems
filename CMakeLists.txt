@@ -20,4 +20,19 @@ set(CMAKE_Fortran_MODULE_DIRECTORY "/home/jimmy/opt/scifor/gnu/4.6.33-2-gcb22c67
 
 set(LIBNAME celap)
 add_subdirectory(src)
+
+include(FetchContent)
+
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.8.0
+)
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()
+
 add_subdirectory(tests)
