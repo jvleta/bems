@@ -18,5 +18,6 @@ set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${bounds}")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${dialect}")
 set(CMAKE_Fortran_MODULE_DIRECTORY "/home/jimmy/opt/scifor/gnu/4.6.33-2-gcb22c67/include/")
 
+set(LIBNAME celap)
 add_subdirectory(src)
-
+add_subdirectory(tests)

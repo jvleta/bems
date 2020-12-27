@@ -2,11 +2,10 @@ module bem
   use scifor
   implicit none
   contains
-    subroutine dostuff(x)
-     real(8):: x
-     write(*,*) "Hello from Fortran land"
-     write(*,*) "x =",x
-    end subroutine
+  subroutine dostuff() bind(c, name='dostuff')
+    use iso_c_binding
+    call chap1ex1(20)
+  end subroutine
   !
   !----------------------------------------------------------------------------
   !
@@ -90,12 +89,12 @@ module bem
 
     sum = 0.0
 
-    do i = 1,N
+    do i = 1, N
       call CPF(xi, eta, xb(i), yb(i), nx(i), ny(i), lg(i), PF1, PF2)
-      sum = sum + phi(i) * PF2 - dphi(i) * PF1
+      sum = sum+phi(i) * PF2-dphi(i) * PF1
     end do
 
-    pint = sum / pi
+    pint = sum/pi
   
   end subroutine
   !
@@ -108,7 +107,9 @@ module bem
     real(8):: phi(4*NO), dphi(4*NO), pint, dl, xi, eta
     real(8):: xi_pts(9), eta_pts(9)
 
-    N = 4 * NO
+    open(unit = 123, file="../tests/celap/celap_example1.out")
+
+    N = 4*NO
     dl = 1.0/real(NO)
 
     do i = 1, NO
@@ -154,16 +155,17 @@ module bem
     xi_pts = (/0.10, 0.10, 0.10, 0.50, 0.50, 0.50, 0.90, 0.90, 0.90/)
     eta_pts = (/0.20, 0.30, 0.40, 0.20, 0.30, 0.40, 0.20, 0.30, 0.40/)
     
-    write(*,100) "number of elements:", N
-100 format(A,I4)
-    do i=1,9
+    write(123, 100) "number of elements:", N
+100 format(A, I4)
+    do i = 1, 9
       xi = xi_pts(i)
       eta = eta_pts(i)
       call CELAP2(N, xi, eta, xb, yb, nx, ny, lg, phi, dphi, pint)
-      write(*,200) xi, eta, pint
+      write(123, 200) xi, eta, pint
 200   format(F6.3, F6.3, F10.6)
     end do
-    write(*,*) ""
+    write(123, *) ""
+    close(123)
 
   end subroutine
 
