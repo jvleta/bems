@@ -2,6 +2,9 @@ module celap
   use iso_c_binding
   use scifor
   implicit none
+  private
+  public:: CELAP1
+  public:: CELAP2
   contains
   subroutine run_celap_ex1() bind(c, name='run_celap_ex1')
     use iso_c_binding
@@ -66,7 +69,6 @@ module celap
     
     Z = B
     call solve(A, Z)
-    !call solver(A, B, N, 1, Z)
 
     do m = 1, N
       if (BCT(m) == 0) then
