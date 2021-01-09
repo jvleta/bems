@@ -20,10 +20,11 @@ set(CMAKE_Fortran_MODULE_DIRECTORY "/home/jimmy/opt/scifor/gnu/4.6.33-2-gcb22c67
 
 set(LIBNAME celap)
 
-add_subdirectory(external/googletest)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/googletest)
 enable_testing()
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/external/SciFortran ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-add_subdirectory(external/SciFortran)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/external/SciFortran ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/SciFortran)
 
 add_subdirectory(src)
 add_subdirectory(tests)
