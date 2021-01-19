@@ -1,11 +1,14 @@
 module celap
   use iso_c_binding
-  use scifor
+  use scifor, only: solve, pi
   implicit none
   private
   public:: CELAP1
   public:: CELAP2
   contains
+  !
+  !----------------------------------------------------------------------------
+  !
   subroutine run_celap_ex1() bind(c, name='run_celap_ex1')
     use iso_c_binding
     call celap_ex1(20)
@@ -13,27 +16,34 @@ module celap
   !
   !----------------------------------------------------------------------------
   !
+  subroutine run_celap_ex2() bind(c, name='run_celap_ex2')
+    use iso_c_binding
+    call celap_ex1(20)
+  end subroutine
+  !
+  !----------------------------------------------------------------------------
+  !
   subroutine CPF(xi, eta, xk, yk, nkx, nky, L, PF1, PF2)
-   real(8), intent(in):: xi, eta, xk, yk, nkx, nky, L
-   real(8):: A, B, E, D, BA, EA
-   real(8), intent(out):: PF1, PF2
+    real(8), intent(in):: xi, eta, xk, yk, nkx, nky, L
+    real(8):: A, B, E, D, BA, EA
+    real(8), intent(out):: PF1, PF2
 
-   A = L**2.0
-   B = 2.0*L * (-nky * (xk-xi) + nkx * (yk-eta))
-   E = (xk-xi)**2.0 + (yk-eta)**2.0
-   D = sqrt(abs(4.0*A * E-B**2.0))
-   BA = B/A
-   EA = E/A
+    A = L**2.0
+    B = 2.0*L * (-nky * (xk-xi) + nkx * (yk-eta))
+    E = (xk-xi)**2.0 + (yk-eta)**2.0
+    D = sqrt(abs(4.0*A * E-B**2.0))
+    BA = B/A
+    EA = E/A
 
-   if (D < 1.0e-12) then
-    PF1 = 0.5*L * (log(L) + (1.0+0.5*BA) * log(abs(1.0+0.5*BA)) &
-        - 0.5*BA*log(abs(0.5*BA)) - 1.0)
-    PF2 = 0.0
-   else
-    PF1 = 0.25*L * (2.0*(log(L)-1.0)-0.5*BA*log(abs(EA)) &
-        + (1.0+0.5*BA)*log(abs(1.0+BA+EA))+(D/A)*(atan((2.0*A+B)/D)-atan(B/D)))
-    PF2 = L*(nkx*(xk-xi)+nky*(yk-eta))/D*(atan((2.0*A+B)/D)-atan(B/D))
-   end if
+    if (D < 1.0e-12) then
+      PF1 = 0.5*L * (log(L) + (1.0+0.5*BA) * log(abs(1.0+0.5*BA)) &
+          - 0.5*BA*log(abs(0.5*BA)) - 1.0)
+      PF2 = 0.0
+    else
+      PF1 = 0.25*L * (2.0*(log(L)-1.0)-0.5*BA*log(abs(EA)) &
+          + (1.0+0.5*BA)*log(abs(1.0+BA+EA))+(D/A)*(atan((2.0*A+B)/D)-atan(B/D)))
+      PF2 = L*(nkx*(xk-xi)+nky*(yk-eta))/D*(atan((2.0*A+B)/D)-atan(B/D))
+    end if
 
   end subroutine
   !
@@ -91,7 +101,6 @@ module celap
     real(8):: sum, pint, PF1, PF2
 
     sum = 0.0
-
     do i = 1, N
       call CPF(xi, eta, xb(i), yb(i), nx(i), ny(i), lg(i), PF1, PF2)
       sum = sum+phi(i) * PF2-dphi(i) * PF1
@@ -104,7 +113,7 @@ module celap
   !----------------------------------------------------------------------------
   !
   subroutine celap_ex1(NO)
-    integer:: NO, N, i, ians
+    integer:: NO, N, i
     integer:: BCT(4*NO)
     real(8):: xb(4*NO+1), yb(4*NO+1), xm(4*NO), ym(4*NO), nx(4*NO), ny(4*NO), lg(4*NO), BCV(4*NO)
     real(8):: phi(4*NO), dphi(4*NO), pint, dl, xi, eta
@@ -171,5 +180,12 @@ module celap
     close(123)
 
   end subroutine
-
+  !
+  !----------------------------------------------------------------------------
+  !
+  subroutine celap_ex2()
+  end subroutine
+  !
+  !----------------------------------------------------------------------------
+  !
 end module
